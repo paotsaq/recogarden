@@ -1,0 +1,6 @@
+(define-constant API-KEY "")
+(define-constant BASE-URL "")
+(define-constant USERNAME "")
+(define-constant USER-ID "")
+(define-constant INDEX-URL (string-append BASE-URL "ajax.php?action=index"))
+(define-constant SNATCHED-URL (string-append BASE-URL "ajax.php?action=user_torrents"))
