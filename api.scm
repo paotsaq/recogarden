@@ -7,6 +7,7 @@
 			  call-with-input-request)
 		(only intarweb
 			  request?
+			  response?
 			  headers
 			  make-request)
 		(only medea
@@ -26,6 +27,10 @@
 		   (value (cadar fields))
 		   (rest (create-field-string (cdr fields))))
 	   (string-append "&" key "=" value rest))))
+(test "can use a single field"
+  #t (string=? "&id=1234" (create-field-string (list (list "id" "1234")))))
+(test "can use two fields"
+  #t (string=? "&id=1234&type=snatched" (create-field-string (list (list "id" "1234") (list "type" "snatched")))))
 
 ; manually creates URI string for an API request
 ; String List[(key . value)] -> URIString
