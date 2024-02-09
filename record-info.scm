@@ -121,23 +121,23 @@
 (define (get-response-from-group-endpoint groupid-uris)
   (map (lambda (uri) (get-response-from-endpoint uri))
 	   groupid-uris))
+; NOTE this should be loaded from a test file, too, akin to test-snatched-response.json
+(define groupid-responses (get-response-from-group-endpoint
+							(get-uris-for-groupids-request
+							  (get-groupids-from-records
+								(get-records snatched-response)))))
 (test "get a list of sucessful responses to groupId endpoint"
 	  #t
 	  (every (lambda (msg) (string=? "success" msg))
-			 (map (lambda (response)  (cdar response))
-				  (get-response-from-group-endpoint
-					(get-uris-for-groupids-request
-					  (get-groupids-from-records
-						(get-records snatched-response)))))))
+		     (map (lambda (response) (cdar response))
+					   groupid-responses)))
 
-;; creates a list of record-info objects from a record vector
-;; RecordsVector -> List[record-info]
-(define (produces-record-info-list-from-vector-of-records rec-vec)
+;; creates a list of record-info objects from a list of groupId responses
+;; List[intarweb#response] -> List[record-info]
+(define (produces-record-info-list-from-vector-of-records groupid-responses)
   (map (lambda (rec) (make-record-info-obj-from-groupid-response rec))
-	   (get-response-from-group-endpoint
-		 (get-uris-for-groupids-request
-		   (get-groupids-from-records rec-vec)))))
+	   groupid-responses))
 (test "creates a list of record-info structs from a vector of records"
 	  #t
 	  (every record-info?
-		(produces-record-info-list-from-vector-of-records (get-records snatched-response))))
+		(produces-record-info-list-from-vector-of-records groupid-responses)))
