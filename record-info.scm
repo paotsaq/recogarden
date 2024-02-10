@@ -99,10 +99,10 @@
   (map (lambda (uri) (get-response-from-endpoint uri))
 	   groupid-uris))
 ; NOTE this should be loaded from a test file, too, akin to test-snatched-response.json
-(define groupid-responses (get-response-from-group-endpoint
-							(get-uris-for-groupids-request
-							  (get-groupids-from-records
-								(get-records snatched-response)))))
+;(define groupid-responses (get-response-from-group-endpoint
+							;(get-uris-for-groupids-request
+							  ;(get-groupids-from-records
+								;(get-records snatched-response)))))
 
 
 ;; creates a list of record-info objects from a list of groupId responses

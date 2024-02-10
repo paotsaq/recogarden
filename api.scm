@@ -51,5 +51,6 @@
 ; sends the request and gets the JSON response
 ; URIString -> intarweb#response
 (define (get-response-from-endpoint endpoint)
+  (print "DOING A REQUEST FOR " endpoint)
   (with-input-from-request (make-request-to-endpoint API-KEY
 													 (create-api-uri-object endpoint)) #f read-json))
