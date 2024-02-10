@@ -4,8 +4,7 @@
 (import defstruct)
 
 ; creates a record-info struct
-; YEAR value must be fetched from another request
-(defstruct record-info artist title year)
+(defstruct record-info artist title year groupid)
 
 ; saves the output JSON into a file, if it doesn't exist yet
 ; (for subsequent testing purposes, so as not to overload the API)

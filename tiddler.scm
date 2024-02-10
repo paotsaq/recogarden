@@ -1,12 +1,24 @@
 (include "utils.scm")
 (import (only (chicken file)
 			  file-exists?
-			  delete-file))
+			  delete-file*)
+		(only (chicken io)
+			  write-line)
+		(only (chicken time posix)
+			  time->string
+			  seconds->utc-time)
+		(only (srfi-1)
+			  any
+			  find))
 
 
 ; tiddler-content, timestamp, filepath are String
+; logfile is EXISTING-RECORDS
 
-(define capri-ri (make-record-info title: "CAPRISONGS" artist: "FKA Twigs" year: "2022"))
+(define capri-ri (make-record-info title: "CAPRISONGS"
+								   artist: "FKA Twigs"
+								   year: 2022
+								   groupid: 1678784))
 
 ; creates a timestamp String
 ; -> timestamp
@@ -23,17 +35,19 @@
 				  "tags: music-record\n"
 				  "title: " (record-info-title record-info) "\n"
 				  "author: " (record-info-artist record-info) "\n"
-				  "year: " (record-info-year record-info) "\n"
+				  "year: " (number->string (record-info-year record-info)) "\n"
 				  "type: text/vnd.tiddlywiki"))
-(test #t (let ((timestamp (get-timestamp)))
-		   (string=? (create-tiddler-content capri-ri timestamp)
-					 (string-append "created: " timestamp "\ncreator: recogarden-script\nmodified: " timestamp "\nmodifier: recogarden-script\ntags: music-record\ntitle: CAPRISONGS\nauthor: FKA Twigs\nyear: 2022\ntype: text/vnd.tiddlywiki"))))
+
 
 ; creates a file from a tiddler-content
 ; tiddler-content filepath -> Boolean
 (define (create-tiddler-file tiddler-content filepath)
    (with-output-to-file filepath (lambda () (write-string tiddler-content))))
-(let* ((filepath "test-tiddler.tid"))
-	(test filepath 
-		  (begin (create-tiddler-file (create-tiddler-content capri-ri (get-timestamp)) filepath)
-				 (and (file-exists? filepath) (delete-file filepath)))))
+
+; checks whether a groupid already exists in the logfile
+; groupid -> Boolean
+(define (record-exists? groupid logfile)
+	(define result (find (lambda (line) (string=? line (number->string groupid)))
+		  (with-input-from-file logfile (lambda () (read-lines)))))
+	(string? result))
+
