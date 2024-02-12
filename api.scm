@@ -1,6 +1,6 @@
 (import test)
 (import (chicken io))
-(import simple-exceptions)
+(import (chicken condition))
 (include "api-consts.scm")
 (include "mylogger.scm")
 (import (only http-client
@@ -53,5 +53,11 @@
 ; URIString -> intarweb#response
 (define (get-response-from-endpoint endpoint)
   (log-message 1 (string-append "Sending GET request to " endpoint))
-  (with-input-from-request (make-request-to-endpoint API-KEY
-													 (create-api-uri-object endpoint)) #f read-json))
+  (handle-exceptions exn
+				   (begin
+					 (let ((exn-message ((condition-property-accessor 'exn 'message) exn)))
+						 (log-message 5 exn-message))
+					 #f)
+  					(with-input-from-request
+					  (make-request-to-endpoint API-KEY (create-api-uri-object endpoint)) #f read-json)
+				   ))

@@ -1,6 +1,5 @@
 (include "utils.scm")
-(include "utils.scm")
-(include "mylogging.scm")
+(include "mylogger.scm")
 (import (only (chicken file)
 			  file-exists?
 			  delete-file*)
@@ -12,11 +11,11 @@
 		(only (srfi-1)
 			  any
 			  find))
+(import (chicken condition))
 
 
 ; tiddler-content, timestamp, filepath are String
 ; logfile is EXISTING-RECORDS
-
 
 ; creates a tiddler-content String from record-info
 ; record-info timestamp -> tiddler-content
@@ -35,7 +34,13 @@
 ; creates a file from a tiddler-content
 ; tiddler-content filepath -> Boolean
 (define (create-tiddler-file tiddler-content filepath)
-   (with-output-to-file filepath (lambda () (write-string tiddler-content))))
+  (handle-exceptions exn
+				   (begin
+					 (let ((exn-message ((condition-property-accessor 'exn 'message) exn)))
+						 (log-message 5 exn-message))
+					 #f)
+				   (with-output-to-file filepath (lambda () tiddler-content))
+				   #t))
 
 ; append a new groupid to the logfile
 ; record-info -> 
@@ -51,4 +56,3 @@
 	(define result (find (lambda (line) (string=? line (number->string groupid)))
 		  (with-input-from-file logfile (lambda () (read-lines)))))
 	(string? result))
-
