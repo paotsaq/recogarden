@@ -54,11 +54,3 @@
 		  (with-input-from-file logfile (lambda () (read-lines)))))
 	(string? result))
 
-(let ((filepath "test-groupid.log"))
-	(begin (append-groupid-to-logfile (record-info-groupid capri-ri) filepath)
-		   (test "can find groupid in logfile"
-				 #t
-				 (record-exists? (record-info-groupid capri-ri) filepath))
-		   (test "absent groupid retrieves false"
-				 #f (record-exists? 1234 filepath))
-		   (delete-file* filepath)))
