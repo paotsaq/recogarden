@@ -78,13 +78,6 @@
 			   (and (and (file-exists? filepath) #t)
 					(delete-file* filepath)))))
 
-; append a new groupid to the logfile
-; record-info -> 
-(define (append-groupid-to-logfile groupid logfile)
-  (call-with-output-file logfile
-						 (lambda (output-port)
-						   (write-line (number->string groupid) output-port))
-						 #:append))
 
 (let ((filepath "test-groupid.log"))
   (test "creates logfile with one single groupid"
