@@ -65,6 +65,11 @@
 
 ; tiddlers
 
+(define capri-ri (make-record-info title: "CAPRISONGS"
+								   artist: "FKA Twigs"
+								   year: 2022
+								   groupid: 1678784))
+
 (test "creates a tiddler-content from record-info"
 	  #t
 	  (let ((timestamp (get-timestamp)))

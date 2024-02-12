@@ -2,6 +2,7 @@
 (import (chicken io))
 (import simple-exceptions)
 (include "api-consts.scm")
+(include "mylogger.scm")
 (import (only http-client
 			  with-input-from-request
 			  call-with-input-request)
@@ -40,7 +41,7 @@
 (define (create-api-uri-object uri-string)
   (absolute-uri uri-string))
 
-; creates the HTTP request object to an API endpoint
+; creates the HTTP GET request object to an API endpoint
 ; String intarweb#uri -> intarweb#request
 (define (make-request-to-endpoint api-key uri-obj)
     (make-request
@@ -51,6 +52,6 @@
 ; sends the request and gets the JSON response
 ; URIString -> intarweb#response
 (define (get-response-from-endpoint endpoint)
-  (print "DOING A REQUEST FOR " endpoint)
+  (log-message 1 (string-append "Sending GET request to " endpoint))
   (with-input-from-request (make-request-to-endpoint API-KEY
 													 (create-api-uri-object endpoint)) #f read-json))

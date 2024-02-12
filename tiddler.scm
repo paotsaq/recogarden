@@ -1,4 +1,6 @@
 (include "utils.scm")
+(include "utils.scm")
+(include "mylogging.scm")
 (import (only (chicken file)
 			  file-exists?
 			  delete-file*)
@@ -15,10 +17,6 @@
 ; tiddler-content, timestamp, filepath are String
 ; logfile is EXISTING-RECORDS
 
-(define capri-ri (make-record-info title: "CAPRISONGS"
-								   artist: "FKA Twigs"
-								   year: 2022
-								   groupid: 1678784))
 
 ; creates a tiddler-content String from record-info
 ; record-info timestamp -> tiddler-content
