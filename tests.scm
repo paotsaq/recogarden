@@ -1,6 +1,13 @@
 (include "api.scm")
 (include "record-info.scm")
 (include "tiddler.scm")
+(include "mylogger.scm")
+(import (only (chicken file)
+			  create-temporary-file)
+		(only (chicken file posix)
+			  set-file-permissions!))
+
+(log-level 0)
 
 ; API Tests
 (test "can use a single field"
@@ -27,6 +34,12 @@
 	  #t (string=? "success" (cdar (get-response-from-endpoint INDEX-URI))))
 
 ; record-info
+
+; NOTE this should be loaded from a test file, too, akin to test-snatched-response.json
+(define groupid-responses (get-response-from-group-endpoint
+							(get-uris-for-groupids-request
+							  (get-groupids-from-records
+								(get-records snatched-response)))))
 
 (test "can retrieve artist from solo album"
 	  #t
@@ -63,7 +76,7 @@
 	  (every record-info?
 		(produces-record-info-list-from-vector-of-records groupid-responses)))
 
-; tiddlers
+; TIDDLERS testing
 
 (define capri-ri (make-record-info title: "CAPRISONGS"
 								   artist: "FKA Twigs"
@@ -79,9 +92,14 @@
 (let* ((filepath "test-tiddler.tid"))
   (test "creates a file from a tiddler-content"
 		filepath
-		(begin (create-tiddler-file (create-tiddler-content capri-ri (get-timestamp)) filepath)
+		(begin (create-tiddler-file (create-tiddler-content capri-ri (get-tiddler-timestamp)) filepath)
 			   (and (and (file-exists? filepath) #t)
 					(delete-file* filepath)))))
+(test "error handling when tiddler file creation fails"
+	#f
+	(let ((temp-file (create-temporary-file)))
+		(begin (set-file-permissions! temp-file 000)
+				(create-tiddler-file (create-tiddler-content capri-ri (get-tiddler-timestamp)) temp-file))))
 
 
 (let ((filepath "test-groupid.log"))
