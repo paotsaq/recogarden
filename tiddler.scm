@@ -20,11 +20,6 @@
 								   year: 2022
 								   groupid: 1678784))
 
-; creates a timestamp String
-; -> timestamp
-(define (get-timestamp)
-  (time->string (seconds->utc-time) "%Y%m%d%H%M%S"))
-
 ; creates a tiddler-content String from record-info
 ; record-info timestamp -> tiddler-content
 (define (create-tiddler-content record-info timestamp)

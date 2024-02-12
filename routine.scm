@@ -24,7 +24,7 @@
 (define PATH (string-append PAOGARDEN-PATH TIDDLERS-PATH))
 
 ; Tiddler creation from record-info list
-(define timestamp (get-timestamp))
+(define timestamp (get-tiddler-timestamp))
 (define (create-tiddlers-from-record-info-list record-info-list)
   (let ((filtered-records
 		 (filter (lambda (rec-info)
