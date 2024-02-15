@@ -6,6 +6,8 @@
 (import (only http-client
 			  with-input-from-request
 			  call-with-input-request)
+		(only (chicken process)
+			  process-sleep)
 		(only intarweb
 			  request?
 			  response?
@@ -52,11 +54,13 @@
 ; sends the request and gets the JSON response
 ; URIString -> intarweb#response
 (define (get-response-from-endpoint endpoint)
-  (log-message 1 (string-append "Sending GET request to " endpoint))
+  (log-message DEBUG (string-append "Sleeping before GET request to " endpoint))
+  (process-sleep 1)
+  (log-message INFO (string-append "Sending GET request to " endpoint))
   (handle-exceptions exn
 				   (begin
 					 (let ((exn-message ((condition-property-accessor 'exn 'message) exn)))
-						 (log-message 5 exn-message))
+						 (log-message ERROR exn-message))
 					 #f)
   					(with-input-from-request
 					  (make-request-to-endpoint API-KEY (create-api-uri-object endpoint)) #f read-json)

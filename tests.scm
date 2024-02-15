@@ -5,9 +5,44 @@
 (import (only (chicken file)
 			  create-temporary-file)
 		(only (chicken file posix)
-			  set-file-permissions!))
+			  set-file-permissions!)
+		(only (chicken time)
+			  current-seconds))
 
-(log-level 0)
+(define TEST-SNATCHED-FILE "test-snatched-response.json")
+(define TEST-GROUPRECORD1234-FILE "test-grouprecord1234-response.json")
+(define TEST-GROUPRECORD1926431-FILE "test-grouprecord1926431-response.json")
+
+(define SNATCHED-URI-WITH-FIELDS 
+	(build-uri-with-fields SNATCHED-URI
+						   (list (list "id" (number->string USER-ID))
+								 (list "type" "snatched")
+								 (list "limit" (number->string NBR-OF-SNATCHES)))))
+(define GROUP-URI-WITH-ID-1234
+    (build-uri-with-fields GROUP-URI
+						   (list (list "id" (number->string 1234)))))
+(define GROUP-URI-WITH-ID-1926431
+    (build-uri-with-fields GROUP-URI
+						   (list (list "id" (number->string 1926431)))))
+
+(log-level ERROR)
+
+; if test-file doesn't exist, loads the json response from a route into a variable
+; intarweb#uri -> intarweb#response
+(define (load-or-create-test-file test-file api-route) 
+  (if (not (file-exists? test-file))
+	 (begin
+	   (print "test file " test-file " created!")
+	   (let ((api-response (get-response-from-endpoint api-route)))
+		     (save-obj-to-file api-response test-file)
+			 api-response))
+	 (begin
+	   (print "test file " test-file " loaded!")
+	   (with-input-from-file test-file read-json))))
+
+(define snatched-response (load-or-create-test-file TEST-SNATCHED-FILE SNATCHED-URI-WITH-FIELDS))
+(define grouprecord-1234-response (load-or-create-test-file TEST-GROUPRECORD1234-FILE GROUP-URI-WITH-ID-1234))
+(define grouprecord-1926431-response (load-or-create-test-file TEST-GROUPRECORD1926431-FILE GROUP-URI-WITH-ID-1926431))
 
 ; API Tests
 (test "can use a single field"
@@ -30,8 +65,13 @@
 
 (test "can create intarweb#request object"
 	  #t (request? (make-request-to-endpoint API-KEY SNATCHED-URI)))
-(test "HTTP request to API index is successful"
-	  #t (string=? "success" (cdar (get-response-from-endpoint INDEX-URI))))
+(let ((start-time (current-seconds))
+	  (response (get-response-from-endpoint INDEX-URI))
+	  (end-time (current-seconds)))
+	(test "HTTP request to API index is successful"
+		  #t (string=? "success" (cdar (get-response-from-endpoint INDEX-URI))))
+	(test "HTTP request waited a second"
+		  #t (string=? "success" (cdar (get-response-from-endpoint INDEX-URI)))))
 
 ; record-info
 
