@@ -57,7 +57,7 @@
 			   (build-uri-with-fields SNATCHED-URI
 									  (list (list "id" (number->string USER-ID))
 											(list "type" "snatched")
-											(list "limit" (number->string NBR-OF-SNATCHES))))))
+											(list "limit" (number->string 10))))))
 (test "can create EXPECTED-GROUP-URI-WITH-ID-1234"
   #t (string=? EXPECTED-GROUP-URI-WITH-ID-1234
 			   (build-uri-with-fields GROUP-URI
@@ -125,7 +125,7 @@
 
 (test "creates a tiddler-content from record-info"
 	  #t
-	  (let ((timestamp (get-timestamp)))
+	  (let ((timestamp (get-tiddler-timestamp)))
 		   (string=? (create-tiddler-content capri-ri timestamp)
 					 (string-append "created: " timestamp "\ncreator: recogarden-script\nmodified: " timestamp "\nmodifier: recogarden-script\ntags: music-record\ntitle: CAPRISONGS\nauthor: FKA Twigs\nyear: 2022\ntype: text/vnd.tiddlywiki"))))
 
