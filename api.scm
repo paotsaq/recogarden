@@ -68,7 +68,7 @@
 				   (begin
 					 (let ((exn-message ((condition-property-accessor 'exn 'message) exn)))
 						 (log-message ERROR exn-message))
-					 #f)
+					 (values #f #f #f))
 				   (call-with-input-request* 
 					(make-request-to-image-uri (absolute-uri endpoint))
 					#f
