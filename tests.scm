@@ -10,6 +10,7 @@
 			  current-seconds))
 
 (define TEST-SNATCHED-FILE "test-snatched-response.json")
+(define TEST-IMAGE-FILE "capri-ri.jpg")
 (define TEST-GROUPRECORD1234-FILE "test-grouprecord1234-response.json")
 (define TEST-GROUPRECORD1926431-FILE "test-grouprecord1926431-response.json")
 
@@ -19,22 +20,23 @@
 								 (list "type" "snatched")
 								 (list "limit" (number->string NBR-OF-SNATCHES)))))
 (define GROUP-URI-WITH-ID-1234
-    (build-uri-with-fields GROUP-URI
+	(build-uri-with-fields GROUP-URI
 						   (list (list "id" (number->string 1234)))))
 (define GROUP-URI-WITH-ID-1926431
-    (build-uri-with-fields GROUP-URI
+	(build-uri-with-fields GROUP-URI
 						   (list (list "id" (number->string 1926431)))))
 
-(log-level ERROR)
+;(log-level ERROR)
 
 ; if test-file doesn't exist, loads the json response from a route into a variable
 ; intarweb#uri -> intarweb#response
+; TODO abstract the save-obj-to-file function; it is not necessarily the same for all objects
 (define (load-or-create-test-file test-file api-route) 
   (if (not (file-exists? test-file))
 	 (begin
 	   (print "test file " test-file " created!")
 	   (let ((api-response (get-response-from-endpoint api-route)))
-		     (save-obj-to-file api-response test-file)
+			 (save-obj-to-file api-response test-file)
 			 api-response))
 	 (begin
 	   (print "test file " test-file " loaded!")
@@ -45,9 +47,9 @@
 (define grouprecord-1926431-response (load-or-create-test-file TEST-GROUPRECORD1926431-FILE GROUP-URI-WITH-ID-1926431))
 
 ; API Tests
-(test "can use a single field"
+(test "creates URIString with a single field"
   #t (string=? "&id=1234" (create-field-string (list (list "id" "1234")))))
-(test "can use two fields"
+(test "creates URIString with multiple fields"
   #t (string=? "&id=1234&type=snatched" (create-field-string (list (list "id" "1234") (list "type" "snatched")))))
 (test "creates URI object from string"
 	  #t (uri? (create-api-uri-object EXPECTED-SNATCHED-URI)))
@@ -73,7 +75,7 @@
 	(test "HTTP request waited a second"
 		  #t (string=? "success" (cdar (get-response-from-endpoint INDEX-URI)))))
 
-; record-info
+ ; record-info
 
 ; NOTE this should be loaded from a test file, too, akin to test-snatched-response.json
 (define groupid-responses (get-response-from-group-endpoint
@@ -96,7 +98,8 @@
 			 (string=? (record-info-artist test-record-info) "Kraftwerk")
 			 (string=? (record-info-title test-record-info) "Trans-Europe Express (Trans Europa Express)")
 			 (eq? (record-info-year test-record-info) 1977)
-			 (eq? (record-info-groupid test-record-info) 1234))))
+			 (eq? (record-info-groupid test-record-info) 1234)
+			 (string=? (record-info-image-uri test-record-info) EXPECTED-IMAGE-URI-WITH-ID-1234))))
 
 (test "can obtain vector of records"
 	  #t
@@ -109,7 +112,7 @@
 (test "get a list of sucessful responses to groupId endpoint"
 	  #t
 	  (every (lambda (msg) (string=? "success" msg))
-		     (map (lambda (response) (cdar response))
+			 (map (lambda (response) (cdar response))
 					   groupid-responses)))
 (test "creates a list of record-info structs from a vector of records"
 	  #t
@@ -121,7 +124,25 @@
 (define capri-ri (make-record-info title: "CAPRISONGS"
 								   artist: "FKA Twigs"
 								   year: 2022
-								   groupid: 1678784))
+								   groupid: 1678784
+								   image-uri: TEST-IMAGE-URI))
+
+(test "creates the album art filename for a record-info object"
+	  #t
+	  (string=? (get-album-art-filename capri-ri) "caprisongs-fka-twigs.jpg"))
+
+
+(let ((test-path (string-append "./"
+								(get-album-art-filename capri-ri) ".")))
+	(test "can save image file from the album-art request"
+		  test-path
+		  (begin (request-and-save-image-file (record-info-image-uri capri-ri) test-path)
+				 (and (and (file-exists? test-path) #t)
+					  (delete-file* test-path)))))
+
+;(test "routine to get album art"
+	  ;#t
+	  ;(produce-record-info-album-art capri-ri))
 
 (test "creates a tiddler-content from record-info"
 	  #t
@@ -140,7 +161,6 @@
 	(let ((temp-file (create-temporary-file)))
 		(begin (set-file-permissions! temp-file 000)
 				(create-tiddler-file (create-tiddler-content capri-ri (get-tiddler-timestamp)) temp-file))))
-
 
 (let ((filepath "test-groupid.log"))
   (test "creates logfile with one single groupid"
@@ -164,10 +184,8 @@
 				   (string=? (number->string 1234) 
 							 (cadr lines)))
 			   (delete-file* filepath)
-			   )))
-
-(let ((filepath "test-groupid.log"))
-	(begin (append-groupid-to-logfile (record-info-groupid capri-ri) filepath)
+			   ))
+  (begin (append-groupid-to-logfile (record-info-groupid capri-ri) filepath)
 		   (test "can find groupid in logfile"
 				 #t
 				 (record-exists? (record-info-groupid capri-ri) filepath))

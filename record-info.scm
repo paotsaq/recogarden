@@ -1,6 +1,5 @@
 (include "api.scm")
 (include "utils.scm")
-(import defstruct)
 (import (only (chicken file)
 			  file-exists?)
 		(only medea
@@ -66,7 +65,8 @@
 		title: (cdr (assoc 'name (cdr (cadadr json-response))))
 		year: (cdr (assoc 'year (cdr (cadadr json-response))))
 		artist: (assemble-artist-string (retrieve-artists-from-group-response json-response))
-		groupid: (cdr (assoc 'id (cdr (cadadr json-response))))))
+		groupid: (cdr (assoc 'id (cdr (cadadr json-response))))
+		image-uri: (cdr (assoc 'wikiImage (cdr (cadadr json-response))))))
 
 ; retrieves a vector of records from the intarweb#response
 ; snatched-route-response -> RecordsVector
@@ -98,11 +98,6 @@
 (define (get-response-from-group-endpoint groupid-uris)
   (map (lambda (uri) (get-response-from-endpoint uri))
 	   groupid-uris))
-; NOTE this should be loaded from a test file, too, akin to test-snatched-response.json
-;(define groupid-responses (get-response-from-group-endpoint
-							;(get-uris-for-groupids-request
-							  ;(get-groupids-from-records
-								;(get-records snatched-response)))))
 
 
 ;; creates a list of record-info objects from a list of groupId responses
