@@ -23,16 +23,27 @@
 ; logfile is String, sourced from the EXISTING-RECORDS defined in api-consts.scm,
 ; and it keeps track of archived `groupid`
 
+; append a new groupid to the logfile
+; record-info -> 
+(define (append-groupid-to-logfile groupid logfile)
+  (call-with-output-file logfile
+						 (lambda (output-port)
+						   (write-line (number->string groupid) output-port))
+						 #:append))
+
 ; creates a filename from record-info
 ; record-info -> String
 (define (get-album-art-filename record-info)
    (define norm (lambda (str) (string-translate (string-downcase str) " " "-")))
-   (norm (string-append (record-info-title record-info) "-" (record-info-artist record-info))))
+   (let ((extension (get-extension-from-image-uri (record-info-image-uri record-info))))
+	   (norm (string-append (record-info-title record-info) "-" (record-info-artist record-info) "." extension))))
 
-;TODO 
-;(string-append TIDDLERS-PATH "/"
-			   ;(get-album-art-filename record-info)
-			   ;"." extension)
+; checks whether a groupid already exists in the logfile
+; groupid -> Boolean
+(define (record-exists? groupid logfile)
+	(define result (find (lambda (line) (string=? line (number->string groupid)))
+		  (with-input-from-file logfile (lambda () (read-lines)))))
+	(string? result))
 
 ; creates a tiddler-content String from record-info
 ; record-info timestamp -> tiddler-content
@@ -45,6 +56,7 @@
 				  "title: " (record-info-title record-info) "\n"
 				  "author: " (record-info-artist record-info) "\n"
 				  "year: " (number->string (record-info-year record-info)) "\n"
+				  "album-art-tiddler: " (get-album-art-filename record-info) "\n"
 				  "type: text/vnd.tiddlywiki"))
 
 ; creates a image-meta-tiddler String from record-info
@@ -72,7 +84,6 @@
 (define (produce-record-info-album-art record-info tiddlers-path)
   (let*-values (((image-uri) (record-info-image-uri record-info))
 				((album-art-filename) (get-album-art-filename record-info))
-				; NOTE check for '/' in tiddlers-path
 				((album-art-filepath) (string-append tiddlers-path album-art-filename))
 				((meta-tiddler-filepath) (string-append album-art-filepath ".meta"))
 				((image-saving-bool uri-obj image-response)
@@ -80,18 +91,3 @@
     (if image-saving-bool
 		(create-tiddler-file (create-image-meta-tiddler record-info) meta-tiddler-filepath)
 		#f)))
-
-; append a new groupid to the logfile
-; record-info -> 
-(define (append-groupid-to-logfile groupid logfile)
-  (call-with-output-file logfile
-						 (lambda (output-port)
-						   (write-line (number->string groupid) output-port))
-						 #:append))
-
-; checks whether a groupid already exists in the logfile
-; groupid -> Boolean
-(define (record-exists? groupid logfile)
-	(define result (find (lambda (line) (string=? line (number->string groupid)))
-		  (with-input-from-file logfile (lambda () (read-lines)))))
-	(string? result))
