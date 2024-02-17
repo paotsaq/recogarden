@@ -11,17 +11,16 @@
 							   (list "type" "snatched")
 							   (list "limit" (number->string NBR-OF-SNATCHES)))))
 
+(get-records (get-response-from-endpoint snatched-uri))
+
 ; record-info creation from API calls
-; snatched-route-response -> List[record-info]
-(print "making API call")
+;  -> List[record-info]
 (define record-info-list 
   (produces-record-info-list-from-vector-of-records
    (get-response-from-group-endpoint
 	(get-uris-for-groupids-request
 	  (get-groupids-from-records
 		(get-records (get-response-from-endpoint snatched-uri)))))))
-
-(define PATH (string-append PAOGARDEN-PATH TIDDLERS-PATH))
 
 ; Tiddler creation from record-info list
 (define timestamp (get-tiddler-timestamp))
@@ -34,10 +33,12 @@
 			  (begin (create-tiddler-file
 					   (create-tiddler-content rec-info timestamp)
 					   (string-append TIDDLERS-PATH "/" (record-info-title rec-info) ".tid"))
+					 (produce-record-info-album-art rec-info TIDDLERS-PATH)
 					 (append-groupid-to-logfile
 					   (record-info-groupid rec-info)
 					   EXISTING-RECORDS)))
 			filtered-records)
+	   ; NOTE this is not accurate
 	   (print "Finished routine!
 			  Added " (length filtered-records) " tiddlers.")))
 
